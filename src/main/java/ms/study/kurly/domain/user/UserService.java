@@ -25,6 +25,7 @@ public class UserService {
         userRepository.save(dto.toEntity());
     }
 
+    // TODO: is로 시작하는 것은 boolean 리턴을 의미. check로 변경하는 것이 좋음 (메서드 이름 의미 생각해보고 고쳐보자)
     public void isExistEmail(String email) {
 
         if (userRepository.existsByEmail(email)) {

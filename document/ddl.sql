@@ -29,19 +29,69 @@ CREATE TABLE user
 
 CREATE INDEX idx_email ON user (email);
 
+# Verification tokens (인증 토큰)
+# 인증 토큰 정보를 나타내는 엔티티입니다.
+
+CREATE TABLE verification_token
+(
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    type       ENUM ('UNKNOWN', 'MOBILE', 'TERMS') NOT NULL DEFAULT 'UNKNOWN',
+    token      VARCHAR(64)                         NOT NULL,
+    created_at DATETIME                            NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME                            NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
 # Mobile verification (휴대폰 인증)
 # 휴대폰 번호 인증 정보를 나타내는 엔티티입니다.
 
 CREATE TABLE mobile_verification
 (
-    id                BIGINT AUTO_INCREMENT PRIMARY KEY,
-    mobile_number     VARCHAR(20) NOT NULL,
-    verification_code VARCHAR(6)  NOT NULL,
-    hash_value        VARCHAR(64),
-    is_verified       BIT         NOT NULL DEFAULT FALSE,
-    created_at        DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at        DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    id                    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    mobile_number         VARCHAR(20) NOT NULL,
+    verification_code     VARCHAR(6)  NOT NULL,
+    created_at            DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at            DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    verification_token_id BIGINT,
+    INDEX idx_mobile_number (mobile_number),
+    INDEX idx_verification_token (verification_token_id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
-CREATE INDEX idx_mobile_number ON mobile_verification (mobile_number);
+# Terms (약관)
+# 약관 정보를 나타내는 엔티티입니다.
+
+CREATE TABLE terms
+(
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title      VARCHAR(255) NOT NULL,
+    content    TEXT         NOT NULL,
+    required   BIT          NOT NULL DEFAULT FALSE,
+    created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
+INSERT INTO terms (title, content, required, created_at, updated_at)
+VALUES ('필수 약관 1', '필수 약관 1 내용', TRUE, NOW(), NOW());
+INSERT INTO terms (title, content, required, created_at, updated_at)
+VALUES ('필수 약관 2', '필수 약관 2 내용', TRUE, NOW(), NOW());
+INSERT INTO terms (title, content, required, created_at, updated_at)
+VALUES ('선택 약관 1', '선택 약관 1 내용', FALSE, NOW(), NOW());
+
+# Terms of service (이용약관)
+# 이용약관 동의 정보를 나타내는 엔티티입니다.
+# TODO: FOREIGN KEY -> index만 설정하는 것이 실무에서 일반적 (이유도 정리해보자)
+
+CREATE TABLE terms_agreement
+(
+    id                    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    agreed                BIT      NOT NULL DEFAULT FALSE,
+    created_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, # TODO: <- 이거 정확히 파악해보고 수정
+    terms_id              BIGINT,
+    verification_token_id BIGINT,
+    INDEX idx_terms_id (terms_id),
+    INDEX idx_token_id (verification_token_id)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;

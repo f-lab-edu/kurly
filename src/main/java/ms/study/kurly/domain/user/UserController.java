@@ -28,6 +28,7 @@ public class UserController {
             throw new KurlyException(error, data);
         }
 
+        // TODO: 서비스에도 있으니 중복 제거
         userService.isExistEmail(request.getEmail());
         userService.signup(request);
     }

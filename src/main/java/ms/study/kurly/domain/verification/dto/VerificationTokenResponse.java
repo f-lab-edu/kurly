@@ -6,7 +6,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter(AccessLevel.PRIVATE)
-public class MobileCodeVerifyResponse {
+public class VerificationTokenResponse {
 
-    private String token;
+    private Long id;
 }

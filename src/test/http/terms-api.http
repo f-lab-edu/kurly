@@ -1,0 +1,26 @@
+
+### 이용 약관 목록
+GET {{url}}/terms
+Content-Type: application/json
+
+### 이용 약관 동의
+POST {{url}}/terms/agreement
+Content-Type: application/json
+
+{
+  "agreements": [
+    {
+      "id": 1,
+      "agreed": true
+    },
+    {
+      "id": 2,
+      "agreed": true
+    },
+    {
+      "id": 3,
+      "agreed": true
+    }
+  ],
+  "mobileVerificationToken": "fKuhVoXmhWqSbBid1qWVxA=="
+}

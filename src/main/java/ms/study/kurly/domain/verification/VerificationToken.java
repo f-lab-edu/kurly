@@ -1,7 +1,8 @@
-package ms.study.kurly.domain.user;
+package ms.study.kurly.domain.verification;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ms.study.kurly.domain.verification.dto.VerificationTokenResponse;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -18,29 +19,20 @@ import java.time.LocalDateTime;
 @DynamicUpdate
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class User {
+public class VerificationToken {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)
     private Long id;
 
-    @Column(nullable = false)
-    private String email;
-
-    @Column(nullable = false)
-    private String password;
-
-    @Column(nullable = false)
-    private String name;
-
-    @Column(nullable = false)
-    private String mobileNumber;
-
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    @Column(nullable = false, columnDefinition = "ENUM('ACTIVE', 'INACTIVE', 'DELETED') DEFAULT 'ACTIVE'")
-    private Status status = Status.ACTIVE;
+    @Column(nullable = false, columnDefinition = "ENUM('UNKNOWN', 'MOBILE', 'TERMS') DEFAULT 'UNKNOWN'")
+    private Type type = Type.UNKNOWN;
+
+    @Column(nullable = false)
+    private String token;
 
     @CreatedDate
     @Column(nullable = false)
@@ -50,9 +42,13 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public enum Status {
-        ACTIVE,
-        INACTIVE,
-        DELETED
+    public enum Type {
+        MOBILE,
+        TERMS,
+        UNKNOWN
+    }
+
+    public VerificationTokenResponse toResponse() {
+        return new VerificationTokenResponse(id);
     }
 }

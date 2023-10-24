@@ -1,7 +1,8 @@
-package ms.study.kurly.domain.user;
+package ms.study.kurly.domain.terms;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ms.study.kurly.domain.terms.dto.TermsResponse;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 @DynamicUpdate
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class User {
+public class Terms {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,21 +27,13 @@ public class User {
     private Long id;
 
     @Column(nullable = false)
-    private String email;
+    private String title;
 
     @Column(nullable = false)
-    private String password;
+    private String content;
 
     @Column(nullable = false)
-    private String name;
-
-    @Column(nullable = false)
-    private String mobileNumber;
-
-    @Enumerated(EnumType.STRING)
-    @Builder.Default
-    @Column(nullable = false, columnDefinition = "ENUM('ACTIVE', 'INACTIVE', 'DELETED') DEFAULT 'ACTIVE'")
-    private Status status = Status.ACTIVE;
+    private Boolean required;
 
     @CreatedDate
     @Column(nullable = false)
@@ -50,9 +43,13 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public enum Status {
-        ACTIVE,
-        INACTIVE,
-        DELETED
+    public TermsResponse toResponse() {
+
+        return TermsResponse.builder()
+                .id(id)
+                .title(title)
+                .content(content)
+                .required(required)
+                .build();
     }
 }

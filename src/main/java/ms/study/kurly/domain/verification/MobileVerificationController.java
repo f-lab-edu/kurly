@@ -26,7 +26,7 @@ public class MobileVerificationController {
     }
 
     @PostMapping("/verification/mobile-verification-code/verify")
-    public Response<MobileCodeVerifyResponse> verifyMobileVerificationCodeRequest(@Valid @RequestBody MobileCodeVerifyRequest request) {
+    public Response<MobileCodeVerifyResponse> verifyMobileVerificationCodeRequest(@Valid @RequestBody MobileCodeVerifyRequest request) throws Exception {
 
         return mobileVerificationService.verifyMobileVerificationCode(request);
     }

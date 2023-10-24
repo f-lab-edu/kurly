@@ -4,16 +4,13 @@ import lombok.RequiredArgsConstructor;
 import ms.study.kurly.common.Error;
 import ms.study.kurly.common.Response;
 import ms.study.kurly.common.exception.KurlyException;
-import ms.study.kurly.domain.verification.dto.MobileCodeVerifyRequest;
-import ms.study.kurly.domain.verification.dto.MobileCodeVerifyResponse;
-import ms.study.kurly.domain.verification.dto.MobileCodeRequest;
+import ms.study.kurly.domain.verification.dto.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 @Transactional
@@ -21,6 +18,7 @@ import java.util.UUID;
 public class MobileVerificationService {
 
     private final MobileVerificationRepository mobileVerificationRepository;
+    private final VerificationTokenService verificationTokenService;
 
     public void sendVerificationCode(MobileCodeRequest dto) {
 
@@ -37,7 +35,7 @@ public class MobileVerificationService {
             }
         }
 
-        String verificationCode = String.valueOf((int) (Math.random() * 1000000));
+        String verificationCode = String.valueOf(100000 + (int)(Math.random() * 900000));
 
         MobileVerification mobileVerification = MobileVerification.builder()
                 .mobileNumber(dto.getMobileNumber())
@@ -47,10 +45,10 @@ public class MobileVerificationService {
         mobileVerificationRepository.save(mobileVerification);
     }
 
-    public Response<MobileCodeVerifyResponse> verifyMobileVerificationCode(MobileCodeVerifyRequest dto) {
+    public Response<MobileCodeVerifyResponse> verifyMobileVerificationCode(MobileCodeVerifyRequest dto) throws Exception {
 
         MobileVerification verification = mobileVerificationRepository
-                .findByMobileNumberOrderByCreatedAtDesc(dto.getMobileNumber())
+                .findFirstByMobileNumberOrderByCreatedAtDesc(dto.getMobileNumber())
                 .orElseThrow(() -> {
                     Error error = Error.MOBILE_VERIFICATION_CODE_NOT_MATCH;
                     Map<Object, Object> data = Map.of("request", dto);
@@ -65,19 +63,22 @@ public class MobileVerificationService {
             throw new KurlyException(error, data);
         }
 
-        if (verification.getCreatedAt().plusMinutes(3).isAfter(LocalDateTime.now())) {
+        if (verification.getCreatedAt().plusMinutes(3).isBefore(LocalDateTime.now())) {
             Error error = Error.EXPIRED_MOBILE_VERIFICATION_CODE;
             Map<Object, Object> data = Map.of("request", dto);
 
             throw new KurlyException(error, data);
         }
 
-        String uuid = UUID.randomUUID().toString();
-        verification.setHashValue(uuid);
-        verification.setVerified(true);
+        VerificationToken token = verificationTokenService.generate(VerificationTokenRequest.builder()
+                .verificationId(verification.getId())
+                .type(VerificationToken.Type.MOBILE)
+                .build());
+
+        verification.setVerificationToken(token);
 
         return Response.<MobileCodeVerifyResponse>builder()
-                .data(new MobileCodeVerifyResponse(uuid))
+                .data(new MobileCodeVerifyResponse(token.getToken()))
                 .build();
     }
 }

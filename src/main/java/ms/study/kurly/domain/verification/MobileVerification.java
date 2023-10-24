@@ -32,14 +32,6 @@ public class MobileVerification {
     @Column(nullable = false)
     private String verificationCode;
 
-    @Setter(AccessLevel.PUBLIC)
-    @Column()
-    private String hashValue;
-
-    @Setter(AccessLevel.PUBLIC)
-    @Column(nullable = false)
-    private boolean isVerified;
-
     @CreatedDate
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -47,4 +39,8 @@ public class MobileVerification {
     @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @Setter(AccessLevel.PUBLIC)
+    @OneToOne(cascade = CascadeType.ALL)
+    private VerificationToken verificationToken;
 }
